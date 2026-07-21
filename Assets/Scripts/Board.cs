@@ -38,8 +38,22 @@ public class Board : MonoBehaviour
         TetrominoData tetrominoData = tetrominoes[random];
         
         this.activePiece.InitializePiece(this, spawnPosition, tetrominoData);
-        SetPiece(activePiece);
+
+        if (IsValidPosition(activePiece, spawnPosition))
+        {
+            SetPiece(activePiece);
+        }
+        else
+        {
+            GameOver();
+        }
     }
+
+    public void GameOver()
+    {
+        this.tilemap.ClearAllTiles();
+    }
+
 
     public void SetPiece(Piece piece)
     {
@@ -81,5 +95,57 @@ public class Board : MonoBehaviour
         }
 
         return true;
+    }
+
+    public void ClearLines()
+    {
+        RectInt bounds = Bounds;
+        int row = bounds.yMin;
+
+        while(row < bounds.yMax)
+        {
+            if(IsLineFull(row))
+            {
+                ClearLine(row);
+            }
+            else {row++;}
+        }
+    }
+
+    private bool IsLineFull(int row)
+    {
+        RectInt bounds = Bounds;
+        for (int column = bounds.xMin; column < bounds.xMax; column++)
+        {
+            Vector3Int position = new Vector3Int(column, row, 0);
+            if(!tilemap.HasTile(position))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void ClearLine(int row)
+    {
+        RectInt bounds = Bounds;
+        for (int column = bounds.xMin; column < bounds.xMax; column++)
+        {
+            Vector3Int position = new Vector3Int(column, row, 0);
+            tilemap.SetTile(position, null);
+        }
+
+        while (row < bounds.yMax)
+        {
+            for (int column = bounds.xMin; column < bounds.xMax; column++)
+            {
+                Vector3Int position = new Vector3Int(column, row + 1, 0);
+                TileBase above = tilemap.GetTile(position);
+
+                position = new Vector3Int(column, row, 0);
+                tilemap.SetTile(position, above);
+            }
+            row++;
+        }
     }
 }
