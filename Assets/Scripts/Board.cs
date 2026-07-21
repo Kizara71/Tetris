@@ -39,7 +39,7 @@ public class Board : MonoBehaviour
         
         this.activePiece.InitializePiece(this, spawnPosition, tetrominoData);
 
-        if (IsValidPosition(activePiece, spawnPosition))
+        if (IsValidPosition(activePiece.cells, spawnPosition))
         {
             SetPiece(activePiece);
         }
@@ -75,12 +75,12 @@ public class Board : MonoBehaviour
         }
     }
 
-    public bool IsValidPosition(Piece piece , Vector3Int position)
+    public bool IsValidPosition(Vector3Int[] cells, Vector3Int position)
     {
 
-        for (int i = 0; i < piece.cells.Length; i++)
+        for (int i = 0; i < cells.Length; i++)
         {
-            Vector3Int tilePostition = piece.cells[i] + position;
+            Vector3Int tilePostition = cells[i] + position;
             
             if(!Bounds.Contains((Vector2Int)tilePostition))
             {

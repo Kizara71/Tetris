@@ -55,7 +55,7 @@ public class GhostPiece : MonoBehaviour
         {
             position.y = row;
 
-            if (mainBoard.IsValidPosition(trackingPiece, position)) 
+            if (mainBoard.IsValidPosition(trackingPiece.cells, position)) 
             {
                 this.position = position;
             } 

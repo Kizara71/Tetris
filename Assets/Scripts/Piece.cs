@@ -9,9 +9,11 @@ public class Piece : MonoBehaviour
 
     public float stepDelay = 1f;
     public float lockDelay = 0.5f;
+    public float softDropDelay = 0.1f;
 
     private float stepTimer = 0f;
     private float lockTimer = 0f;
+    private float softDropTimer = 0f;
 
 
     public void InitializePiece(Board board, Vector3Int position, TetrominoData data)
@@ -24,6 +26,7 @@ public class Piece : MonoBehaviour
 
         this.stepTimer = Time.time + stepDelay;
         this.lockTimer = 0f;
+        this.softDropTimer = Time.time + softDropDelay;
 
 
         if(cells == null)
@@ -47,9 +50,10 @@ public class Piece : MonoBehaviour
         // {
         //     Move(Vector2Int.up);
         // }
-        if(Input.GetKeyDown(KeyCode.S))
+        if(Input.GetKey(KeyCode.S) && Time.time >= softDropTimer)
         {
             Move(Vector2Int.down);
+            softDropTimer = Time.time + softDropDelay;
         }
         if(Input.GetKeyDown(KeyCode.A))
         {
@@ -101,51 +105,59 @@ public class Piece : MonoBehaviour
     private void RotatePiece(int rotationDirection)
     {
         int originalIndex = rotationIndex;
-        rotationIndex = Wrap(rotationIndex + rotationDirection, 0, 4);
+        int newRotationIndex = Wrap(rotationIndex + rotationDirection, 0, 4);
         
-        ApplyRotationMatrix(rotationDirection);
+        Vector3Int[] newCells = new Vector3Int[cells.Length];
+        ApplyRotationMatrix(rotationDirection, newCells);
 
-        if(!TestWallKicks(originalIndex, rotationDirection))
+        if(!TestWallKicks(newCells, originalIndex, rotationDirection))
         {
-            rotationIndex = originalIndex;
-            ApplyRotationMatrix(-rotationDirection);
+            // Rotation failed, do nothing.
+        }
+        else
+        {
+            // Rotation succeeded, apply changes.
+            this.rotationIndex = newRotationIndex;
+            this.cells = newCells;
         }
     }
 
-    private void ApplyRotationMatrix(int rotationDirection)
+    private void ApplyRotationMatrix(int rotationDirection, Vector3Int[] newCells)
     {
         for (int i = 0; i < cells.Length; i++)
         {
             Vector3 cell = cells[i];
-            int x = 0, y = 0;
 
             switch (data.tetromino)
             {
                 case Tetromino.I:
-                    break;
                 case Tetromino.O:
                     cell.x -= 0.5f;
                     cell.y -= 0.5f;
-                    x = Mathf.CeilToInt((cell.x * Data.RotationMatrix[0]) + (cell.y * Data.RotationMatrix[1]));
-                    y = Mathf.CeilToInt((cell.x * Data.RotationMatrix[2]) + (cell.y * Data.RotationMatrix[3]));
                     break;
                 default:
-                    x = Mathf.RoundToInt((cell.x * Data.RotationMatrix[0]) + (cell.y * Data.RotationMatrix[1]));
-                    y = Mathf.RoundToInt((cell.x * Data.RotationMatrix[2]) + (cell.y * Data.RotationMatrix[3]));
                     break;
             }
 
-            cells[i] = new Vector3Int(x, y, 0);
+            float x, y;
+
+            // Apply rotation matrix
+            x = (cell.x * Data.RotationMatrix[0] * rotationDirection) + (cell.y * Data.RotationMatrix[1] * rotationDirection);
+            y = (cell.x * Data.RotationMatrix[2] * rotationDirection) + (cell.y * Data.RotationMatrix[3] * rotationDirection);
+
+            // Use Ceiling for I and O pieces as they rotate around a center point, not a center cell
+            // Use Round for all other pieces
+            newCells[i] = (data.tetromino == Tetromino.I || data.tetromino == Tetromino.O) ? new Vector3Int(Mathf.CeilToInt(x), Mathf.CeilToInt(y), 0) : new Vector3Int(Mathf.RoundToInt(x), Mathf.RoundToInt(y), 0);
         }
     }
 
-    private bool TestWallKicks(int rotationIndex, int rotationDirection)
+    private bool TestWallKicks(Vector3Int[] newCells, int rotationIndex, int rotationDirection)
     {
         int wallKickIndex = GetWallKickIndex(rotationIndex, rotationDirection);
         for (int i = 0; i < data.wallKicks.GetLength(1); i++)
         {
-            Vector2Int translation = data.wallKicks[wallKickIndex , i];
-            if(Move(translation))
+            Vector3Int translation = (Vector3Int)data.wallKicks[wallKickIndex , i];
+            if(Move(newCells, translation))
             {
                 return true;
             }
@@ -184,16 +196,29 @@ public class Piece : MonoBehaviour
         Lock();
     }
 
-    private bool Move(Vector2Int translation)
+    private bool Move(Vector3Int[] newCells, Vector3Int translation)
     {
-        Vector3Int newPostion = position;
-        newPostion.x += translation.x;
-        newPostion.y += translation.y;
+        Vector3Int newPosition = position + translation;
 
-        bool valid = board.IsValidPosition(this, newPostion);
+        bool valid = board.IsValidPosition(newCells, newPosition);
         if(valid)
         {
-            position = newPostion;
+            position = newPosition;
+            lockTimer = 0f;
+        }
+
+        return valid; 
+    }
+
+    private bool Move(Vector2Int translation)
+    {
+        Vector3Int newPosition = position;
+        newPosition.x += translation.x;
+        newPosition.y += translation.y;
+        bool valid = board.IsValidPosition(this.cells, newPosition);
+        if(valid)
+        {
+            position = newPosition;
             lockTimer = 0f;
         }
 
