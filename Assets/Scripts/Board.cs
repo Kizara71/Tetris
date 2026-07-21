@@ -1,16 +1,16 @@
 using UnityEngine;
-
+using UnityEngine.Tilemaps;
 public class Board : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public TetrominoData[] tetrominoes;
+    public Tilemap tilemap {get ; private set;}
 
-    // Update is called once per frame
-    void Update()
+    private void Awake()
     {
-        
+        tilemap = GetComponentInChildren<Tilemap>();
+        for (int i = 0; i < tetrominoes.Length; i++)
+        {
+            tetrominoes[i].Initialize();
+        }
     }
 }
