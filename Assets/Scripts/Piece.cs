@@ -43,6 +43,11 @@ public class Piece : MonoBehaviour
         }
     }
 
+    public void ShiftUp(int amount)
+    {
+        position = new Vector3Int(position.x, position.y + amount, position.z);
+    }
+
     private void OnEnable()
     {
         if (GameInputManager.Instance != null)

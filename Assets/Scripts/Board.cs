@@ -2,7 +2,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 public class Board : MonoBehaviour
 {
-    public TetrominoData[] tetrominoes;
+    private IPieceFactory pieceFactory;
+    private IGarbageLineFactory garbageFactory;
     public Tilemap tilemap {get ; private set;}
     public Piece activePiece {get; private set;}
     public Vector3Int spawnPosition;
@@ -20,16 +21,80 @@ public class Board : MonoBehaviour
     private void Awake()
     {
         tilemap = GetComponentInChildren<Tilemap>();
-        for (int i = 0; i < tetrominoes.Length; i++)
+        pieceFactory = GetComponent<IPieceFactory>();
+        garbageFactory = GetComponent<IGarbageLineFactory>();
+        
+        if (pieceFactory == null)
         {
-            tetrominoes[i].InitializeData();
+            Debug.LogError("Board requires an IPieceFactory component!");
         }
+
         activePiece = GetComponentInChildren<Piece>();
     }
 
     private void Start()
     {
         SpawnPiece();
+        StartCoroutine(TempGarbageRoutine()); // Temporary for testing
+    }
+
+    private System.Collections.IEnumerator TempGarbageRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(10f);
+            AddGarbageLines(4);
+        }
+    }
+
+    // Call this method when enemies or events trigger garbage lines
+    public void AddGarbageLines(int linesToAdd)
+    {
+        if (garbageFactory == null) return;
+
+        // Temporarily remove the active piece so its tiles don't get shifted or leave ghosts
+        if (activePiece != null)
+        {
+            RemovePiece(activePiece);
+        }
+        
+        RectInt bounds = Bounds;
+
+        // 1. Shift all current tiles UP by 'linesToAdd'
+        for (int row = bounds.yMax - 1; row >= bounds.yMin; row--)
+        {
+            for (int col = bounds.xMin; col < bounds.xMax; col++)
+            {
+                Vector3Int pos = new Vector3Int(col, row, 0);
+                TileBase tile = tilemap.GetTile(pos);
+                
+                // Only move if there is a tile
+                if (tile != null)
+                {
+                    Vector3Int newPos = new Vector3Int(col, row + linesToAdd, 0);
+                    tilemap.SetTile(newPos, tile);
+                    tilemap.SetTile(pos, null);
+                }
+            }
+        }
+
+        // 2. Insert new garbage lines at the bottom
+        TileBase[][] newGarbageLines = garbageFactory.CreateGarbageLines(linesToAdd, bounds.size.x);
+        for (int i = 0; i < linesToAdd; i++)
+        {
+            for (int col = 0; col < bounds.size.x; col++)
+            {
+                Vector3Int pos = new Vector3Int(bounds.xMin + col, bounds.yMin + i, 0);
+                tilemap.SetTile(pos, newGarbageLines[i][col]);
+            }
+        }
+
+        // 3. Shift the active piece's logical position up and redraw it
+        if (activePiece != null)
+        {
+            //activePiece.ShiftUp(linesToAdd);
+            SetPiece(activePiece);
+        }
     }
 
     private void OnEnable()
@@ -56,9 +121,9 @@ public class Board : MonoBehaviour
 
     public void SpawnPiece()
     {
-        int random = Random.Range(0, tetrominoes.Length);
-        TetrominoData tetrominoData = tetrominoes[random];
-        
+        if (pieceFactory == null) return;
+
+        TetrominoData tetrominoData = pieceFactory.CreatePiece();
         this.activePiece.InitializePiece(this, spawnPosition, tetrominoData);
 
         if (IsValidPosition(activePiece.cells, spawnPosition))
