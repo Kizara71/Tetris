@@ -1,42 +1,53 @@
 using UnityEngine;
 
-public class Singleton<T> : MonoBehaviour where T : Component
+namespace Tetris
 {
-    private static T instance;
-    public static T Instance
+    public class Singleton<T> : MonoBehaviour where T : Component
     {
-        get
+        private static T instance;
+        public static T Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = (T)FindFirstObjectByType(typeof(T));
+                    if (instance == null)
+                    {
+                        GameObject gameObj = new GameObject();
+                        gameObj.name = typeof(T).Name;
+                        instance = gameObj.AddComponent<T>();
+                    }
+                }
+                return instance;
+            }
+        }
+    
+        protected virtual void Awake()
+        {
+            RemoveDuplicates();
+        }
+    
+        private void RemoveDuplicates()
         {
             if (instance == null)
             {
-                instance = (T)FindFirstObjectByType(typeof(T));
-                if (instance == null)
-                {
-                    GameObject gameObj = new GameObject();
-                    gameObj.name = typeof(T).Name;
-                    instance = gameObj.AddComponent<T>();
-                    DontDestroyOnLoad(gameObj);
-                }
+                instance = this as T;
             }
-            return instance;
+            else if (instance != this)
+            {
+                Destroy(gameObject);
+            }
         }
-    }
-
-    protected virtual void Awake()
-    {
-        RemoveDuplicates();
-    }
-
-    private void RemoveDuplicates()
-    {
-        if (instance == null)
+    
+        protected virtual void OnDestroy()
         {
-            instance = this as T;
-            DontDestroyOnLoad(gameObject);
-        }
-        else if (instance != this)
-        {
-            Destroy(gameObject);
+            if (instance == this)
+            {
+                instance = null;
+            }
         }
     }
+    
 }
+

@@ -1,4 +1,9 @@
-public interface ICommand
+namespace Tetris
 {
-    void Execute();
+    public interface ICommand
+    {
+        void Execute();
+    }
+    
 }
+

@@ -1,21 +1,26 @@
 using UnityEngine;
 
-public class StandardPieceFactory : MonoBehaviour, IPieceFactory
+namespace Tetris
 {
-    [SerializeField] private TetrominoData[] tetrominoes;
-
-    private void Awake()
+    public class StandardPieceFactory : MonoBehaviour, IPieceFactory
     {
-        // Initialize the cells for all tetrominoes when the game starts
-        for (int i = 0; i < tetrominoes.Length; i++)
+        [SerializeField] private TetrominoData[] tetrominoes;
+    
+        private void Awake()
         {
-            tetrominoes[i].InitializeData();
+            // Initialize the cells for all tetrominoes when the game starts
+            for (int i = 0; i < tetrominoes.Length; i++)
+            {
+                tetrominoes[i].InitializeData();
+            }
+        }
+    
+        public TetrominoData CreatePiece()
+        {
+            int random = Random.Range(0, tetrominoes.Length);
+            return tetrominoes[random];
         }
     }
-
-    public TetrominoData CreatePiece()
-    {
-        int random = Random.Range(0, tetrominoes.Length);
-        return tetrominoes[random];
-    }
+    
 }
+

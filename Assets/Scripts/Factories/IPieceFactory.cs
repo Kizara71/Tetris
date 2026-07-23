@@ -1,6 +1,11 @@
 using UnityEngine;
 
-public interface IPieceFactory
+namespace Tetris
 {
-    TetrominoData CreatePiece();
+    public interface IPieceFactory
+    {
+        TetrominoData CreatePiece();
+    }
+    
 }
+

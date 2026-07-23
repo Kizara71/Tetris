@@ -1,33 +1,38 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class GarbageLineFactory : MonoBehaviour, IGarbageLineFactory
+namespace Tetris
 {
-    [Tooltip("The tile to use for garbage blocks")]
-    [SerializeField] private TileBase garbageTile;
-
-    public TileBase[][] CreateGarbageLines(int count, int width)
+    public class GarbageLineFactory : MonoBehaviour, IGarbageLineFactory
     {
-        TileBase[][] lines = new TileBase[count][];
-        
-        // Randomly pick one column to be the empty hole for ALL of these lines
-        int holeIndex = Random.Range(0, width);
-
-        for (int i = 0; i < count; i++)
+        [Tooltip("The tile to use for garbage blocks")]
+        [SerializeField] private TileBase garbageTile;
+    
+        public TileBase[][] CreateGarbageLines(int count, int width)
         {
-            lines[i] = new TileBase[width];
-            for (int col = 0; col < width; col++)
+            TileBase[][] lines = new TileBase[count][];
+            
+            // Randomly pick one column to be the empty hole for ALL of these lines
+            int holeIndex = Random.Range(0, width);
+    
+            for (int i = 0; i < count; i++)
             {
-                if (col == holeIndex)
+                lines[i] = new TileBase[width];
+                for (int col = 0; col < width; col++)
                 {
-                    lines[i][col] = null; // The hole
-                }
-                else
-                {
-                    lines[i][col] = garbageTile; // The garbage block
+                    if (col == holeIndex)
+                    {
+                        lines[i][col] = null; // The hole
+                    }
+                    else
+                    {
+                        lines[i][col] = garbageTile; // The garbage block
+                    }
                 }
             }
+            return lines;
         }
-        return lines;
     }
+    
 }
+

@@ -1,41 +1,59 @@
 using UnityEngine;
 using TMPro;
 
-public class ScoreUI : MonoBehaviour
+namespace Tetris
 {
-    public ScoreManager scoreManager;
-    public TextMeshProUGUI scoreText;
-
-    private void OnEnable()
+    public class ScoreUI : MonoBehaviour
     {
-        if (scoreManager != null)
+        public ScoreManager scoreManager;
+        public TextMeshProUGUI scoreText;
+        public TextMeshProUGUI levelText;
+        public TextMeshProUGUI multiplierText;
+    
+        private void OnEnable()
         {
-            scoreManager.OnScoreChanged += UpdateScoreText;
+            if (scoreManager != null)
+            {
+                scoreManager.OnScoreUpdated += UpdateUI;
+            }
+        }
+    
+        private void OnDisable()
+        {
+            if (scoreManager != null)
+            {
+                scoreManager.OnScoreUpdated -= UpdateUI;
+            }
+        }
+    
+        private void Start()
+        {
+            // Initialize the UI with the current score
+            if (scoreManager != null)
+            {
+                UpdateUI();
+            }
+        }
+    
+        private void UpdateUI()
+        {
+            if (scoreText != null)
+            {
+                scoreText.text = "Score: " + scoreManager.score.ToString(); 
+            }
+    
+            if (levelText != null)
+            {
+                levelText.text = "Level: " + scoreManager.level.ToString();
+            }
+    
+            if (multiplierText != null)
+            {
+                string frenzyText = scoreManager.isFrenzy ? " (FRENZY!)" : "";
+                multiplierText.text = "Multiplier: x" + scoreManager.multiplier.ToString() + frenzyText;
+            }
         }
     }
-
-    private void OnDisable()
-    {
-        if (scoreManager != null)
-        {
-            scoreManager.OnScoreChanged -= UpdateScoreText;
-        }
-    }
-
-    private void Start()
-    {
-        // Initialize the UI with the current score
-        if (scoreManager != null)
-        {
-            UpdateScoreText(scoreManager.score);
-        }
-    }
-
-    private void UpdateScoreText(int newScore)
-    {
-        if (scoreText != null)
-        {
-            scoreText.text = "Score: " + newScore.ToString("D6"); // "D6" pads the number with leading zeros, e.g., 000100
-        }
-    }
+    
 }
+

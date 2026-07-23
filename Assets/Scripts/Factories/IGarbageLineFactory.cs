@@ -1,6 +1,11 @@
 using UnityEngine.Tilemaps;
 
-public interface IGarbageLineFactory
+namespace Tetris
 {
-    TileBase[][] CreateGarbageLines(int count, int width);
+    public interface IGarbageLineFactory
+    {
+        TileBase[][] CreateGarbageLines(int count, int width);
+    }
+    
 }
+
