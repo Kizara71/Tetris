@@ -48,31 +48,7 @@ public class Piece : MonoBehaviour
         position = new Vector3Int(position.x, position.y + amount, position.z);
     }
 
-    private void OnEnable()
-    {
-        if (GameInputManager.Instance != null)
-        {
-            GameInputManager.Instance.OnMoveLeft += HandleMoveLeft;
-            GameInputManager.Instance.OnMoveRight += HandleMoveRight;
-            GameInputManager.Instance.OnRotateLeft += HandleRotateLeft;
-            GameInputManager.Instance.OnRotateRight += HandleRotateRight;
-            GameInputManager.Instance.OnHardDrop += HandleHardDrop;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (GameInputManager.Instance != null)
-        {
-            GameInputManager.Instance.OnMoveLeft -= HandleMoveLeft;
-            GameInputManager.Instance.OnMoveRight -= HandleMoveRight;
-            GameInputManager.Instance.OnRotateLeft -= HandleRotateLeft;
-            GameInputManager.Instance.OnRotateRight -= HandleRotateRight;
-            GameInputManager.Instance.OnHardDrop -= HandleHardDrop;
-        }
-    }
-
-    private void HandleMoveLeft() 
+    public void HandleMoveLeft() 
     {
         board.RemovePiece(this);
         Move(Vector2Int.left);
@@ -80,7 +56,7 @@ public class Piece : MonoBehaviour
         moveTimer = Time.time + moveDelay; // Reset timer for continuous movement delay
     }
     
-    private void HandleMoveRight() 
+    public void HandleMoveRight() 
     {
         board.RemovePiece(this);
         Move(Vector2Int.right);
@@ -88,25 +64,33 @@ public class Piece : MonoBehaviour
         moveTimer = Time.time + moveDelay; // Reset timer for continuous movement delay
     }
     
-    private void HandleRotateLeft() 
+    public void HandleRotateLeft() 
     {
         board.RemovePiece(this);
         RotatePiece(-1);
         board.SetPiece(this);
     }
     
-    private void HandleRotateRight() 
+    public void HandleRotateRight() 
     {
         board.RemovePiece(this);
         RotatePiece(1);
         board.SetPiece(this);
     }
     
-    private void HandleHardDrop()
+    public void HandleHardDrop()
     {
         board.RemovePiece(this);
         HardDrop();
         // HardDrop calls Lock(), which sets the piece, so we don't need to call SetPiece here.
+    }
+
+    public void HandleSoftDrop()
+    {
+        board.RemovePiece(this);
+        Move(Vector2Int.down);
+        board.SetPiece(this);
+        softDropTimer = Time.time + softDropDelay;
     }
 
     public void Update()
@@ -114,26 +98,6 @@ public class Piece : MonoBehaviour
         board.RemovePiece(this);
 
         lockTimer += Time.deltaTime;
-
-        if (GameInputManager.Instance != null)
-        {
-            if (GameInputManager.Instance.IsSoftDropHeld() && Time.time >= softDropTimer)
-            {
-                Move(Vector2Int.down);
-                softDropTimer = Time.time + softDropDelay;
-            }
-
-            if (GameInputManager.Instance.IsMoveLeftHeld() && Time.time >= moveTimer)
-            {
-                Move(Vector2Int.left);
-                moveTimer = Time.time + moveDelay;
-            }
-            else if (GameInputManager.Instance.IsMoveRightHeld() && Time.time >= moveTimer)
-            {
-                Move(Vector2Int.right);
-                moveTimer = Time.time + moveDelay;
-            }
-        }
 
         if(Time.time >= stepTimer)
         {

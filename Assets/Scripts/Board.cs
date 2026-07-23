@@ -4,6 +4,9 @@ public class Board : MonoBehaviour
 {
     private IPieceFactory pieceFactory;
     private IGarbageLineFactory garbageFactory;
+    private NextQueueSystem nextQueueSystem;
+    private HoldSystem holdSystem;
+
     public Tilemap tilemap {get ; private set;}
     public Piece activePiece {get; private set;}
     public Vector3Int spawnPosition;
@@ -23,6 +26,8 @@ public class Board : MonoBehaviour
         tilemap = GetComponentInChildren<Tilemap>();
         pieceFactory = GetComponent<IPieceFactory>();
         garbageFactory = GetComponent<IGarbageLineFactory>();
+        nextQueueSystem = GetComponent<NextQueueSystem>();
+        holdSystem = GetComponent<HoldSystem>();
         
         if (pieceFactory == null)
         {
@@ -34,6 +39,10 @@ public class Board : MonoBehaviour
 
     private void Start()
     {
+        if (nextQueueSystem != null)
+        {
+            nextQueueSystem.InitializeQueue();
+        }
         SpawnPiece();
         StartCoroutine(TempGarbageRoutine()); // Temporary for testing
     }
@@ -92,7 +101,7 @@ public class Board : MonoBehaviour
         // 3. Shift the active piece's logical position up and redraw it
         if (activePiece != null)
         {
-            //activePiece.ShiftUp(linesToAdd);
+            activePiece.ShiftUp(linesToAdd);
             SetPiece(activePiece);
         }
     }
@@ -115,15 +124,47 @@ public class Board : MonoBehaviour
 
     private void HandlePieceLocked()
     {
+        if (holdSystem != null) holdSystem.ResetHoldLock();
         ClearLines();
         SpawnPiece();
+    }
+
+    public void HoldPiece()
+    {
+        if (holdSystem == null) return;
+        if (holdSystem.hasHeldThisTurn) return;
+
+        RemovePiece(activePiece);
+        
+        TetrominoData? swappedPiece = holdSystem.HoldPiece(activePiece.data);
+        
+        if (swappedPiece.HasValue)
+        {
+            // Spawn the previously held piece
+            activePiece.InitializePiece(this, spawnPosition, swappedPiece.Value);
+            SetPiece(activePiece);
+        }
+        else
+        {
+            // First time holding, just spawn a new piece from the queue
+            SpawnPiece();
+        }
     }
 
     public void SpawnPiece()
     {
         if (pieceFactory == null) return;
 
-        TetrominoData tetrominoData = pieceFactory.CreatePiece();
+        TetrominoData tetrominoData;
+        if (nextQueueSystem != null)
+        {
+            tetrominoData = nextQueueSystem.GetNextPiece();
+        }
+        else
+        {
+            tetrominoData = pieceFactory.CreatePiece();
+        }
+
         this.activePiece.InitializePiece(this, spawnPosition, tetrominoData);
 
         if (IsValidPosition(activePiece.cells, spawnPosition))

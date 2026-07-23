@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class StandardGarbageLineFactory : MonoBehaviour, IGarbageLineFactory
+public class GarbageLineFactory : MonoBehaviour, IGarbageLineFactory
 {
     [Tooltip("The tile to use for garbage blocks")]
     [SerializeField] private TileBase garbageTile;

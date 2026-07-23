@@ -145,6 +145,15 @@ public partial class @MyInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Hold"",
+                    ""type"": ""Button"",
+                    ""id"": ""dfad867e-5aea-40b0-a39b-3ce35dfd53a4"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -205,6 +214,17 @@ public partial class @MyInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""a6b7acb8-2c4a-415d-9c0a-69ee4e4542bf"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Hold"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""e0f31ac9-b806-469f-b9ca-5a06d8668e9c"",
                     ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
@@ -227,6 +247,7 @@ public partial class @MyInputActions: IInputActionCollection2, IDisposable
         m_Tertromino_RotateClockwise = m_Tertromino.FindAction("RotateClockwise", throwIfNotFound: true);
         m_Tertromino_RotateCounterClockwise = m_Tertromino.FindAction("RotateCounterClockwise", throwIfNotFound: true);
         m_Tertromino_Drop = m_Tertromino.FindAction("Drop", throwIfNotFound: true);
+        m_Tertromino_Hold = m_Tertromino.FindAction("Hold", throwIfNotFound: true);
     }
 
     ~@MyInputActions()
@@ -313,6 +334,7 @@ public partial class @MyInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Tertromino_RotateClockwise;
     private readonly InputAction m_Tertromino_RotateCounterClockwise;
     private readonly InputAction m_Tertromino_Drop;
+    private readonly InputAction m_Tertromino_Hold;
     /// <summary>
     /// Provides access to input actions defined in input action map "Tertromino".
     /// </summary>
@@ -348,6 +370,10 @@ public partial class @MyInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Tertromino/Drop".
         /// </summary>
         public InputAction @Drop => m_Wrapper.m_Tertromino_Drop;
+        /// <summary>
+        /// Provides access to the underlying input action "Tertromino/Hold".
+        /// </summary>
+        public InputAction @Hold => m_Wrapper.m_Tertromino_Hold;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -392,6 +418,9 @@ public partial class @MyInputActions: IInputActionCollection2, IDisposable
             @Drop.started += instance.OnDrop;
             @Drop.performed += instance.OnDrop;
             @Drop.canceled += instance.OnDrop;
+            @Hold.started += instance.OnHold;
+            @Hold.performed += instance.OnHold;
+            @Hold.canceled += instance.OnHold;
         }
 
         /// <summary>
@@ -421,6 +450,9 @@ public partial class @MyInputActions: IInputActionCollection2, IDisposable
             @Drop.started -= instance.OnDrop;
             @Drop.performed -= instance.OnDrop;
             @Drop.canceled -= instance.OnDrop;
+            @Hold.started -= instance.OnHold;
+            @Hold.performed -= instance.OnHold;
+            @Hold.canceled -= instance.OnHold;
         }
 
         /// <summary>
@@ -503,5 +535,12 @@ public partial class @MyInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnDrop(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Hold" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnHold(InputAction.CallbackContext context);
     }
 }

@@ -45,6 +45,7 @@ public class GameInputManager : Singleton<GameInputManager>
         inputActions.Tertromino.RotateCounterClockwise.performed += HandleRotateLeft;
         
         inputActions.Tertromino.Drop.performed += HandleHardDrop;
+        inputActions.Tertromino.Hold.performed += HandleHold;
     }
 
     private void OnDisable()
@@ -67,6 +68,7 @@ public class GameInputManager : Singleton<GameInputManager>
         inputActions.Tertromino.RotateCounterClockwise.performed -= HandleRotateLeft;
         
         inputActions.Tertromino.Drop.performed -= HandleHardDrop;
+        inputActions.Tertromino.Hold.performed -= HandleHold;
     }
 
     // State Tracking (For continuous movement)
@@ -81,6 +83,7 @@ public class GameInputManager : Singleton<GameInputManager>
     private void HandleRotateRight(InputAction.CallbackContext context) => OnRotateRight?.Invoke();
     private void HandleRotateLeft(InputAction.CallbackContext context) => OnRotateLeft?.Invoke();
     private void HandleHardDrop(InputAction.CallbackContext context) => OnHardDrop?.Invoke();
+    private void HandleHold(InputAction.CallbackContext context) => OnHold?.Invoke();
 
     public bool IsSoftDropHeld() => isSoftDropHeld;
     public bool IsMoveLeftHeld() => isMoveLeftHeld;
