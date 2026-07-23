@@ -5,7 +5,12 @@ namespace Tetris
     public class MoveLeftCommand : ICommand
     {
         private Piece piece;
-        public MoveLeftCommand(Piece piece) { this.piece = piece; }
+        public MoveLeftCommand(Piece piece) 
+        { 
+            // test try and catch
+            //throw new System.Exception("Oops, the Left Arrow key broke!"); 
+            this.piece = piece;
+        }
         public void Execute() { piece.HandleMoveLeft(); }
     }
     

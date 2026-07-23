@@ -102,10 +102,16 @@ namespace Tetris
                 }
             }
     
-            command.Execute();
-            commandHistory.Push(command);
+            try
+            {
+                command.Execute();
+                commandHistory.Push(command);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("Command failed to execute: " + ex.Message);
+            }
         }
     }
     
 }
-
