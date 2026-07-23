@@ -32,6 +32,28 @@ public class Board : MonoBehaviour
         SpawnPiece();
     }
 
+    private void OnEnable()
+    {
+        if (EventManager.Instance != null)
+        {
+            EventManager.Instance.OnPieceLocked += HandlePieceLocked;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (EventManager.Instance != null)
+        {
+            EventManager.Instance.OnPieceLocked -= HandlePieceLocked;
+        }
+    }
+
+    private void HandlePieceLocked()
+    {
+        ClearLines();
+        SpawnPiece();
+    }
+
     public void SpawnPiece()
     {
         int random = Random.Range(0, tetrominoes.Length);
@@ -45,6 +67,10 @@ public class Board : MonoBehaviour
         }
         else
         {
+            if (EventManager.Instance != null)
+            {
+                EventManager.Instance.TriggerGameOver();
+            }
             GameOver();
         }
     }
@@ -101,14 +127,21 @@ public class Board : MonoBehaviour
     {
         RectInt bounds = Bounds;
         int row = bounds.yMin;
+        int linesCleared = 0;
 
         while(row < bounds.yMax)
         {
             if(IsLineFull(row))
             {
                 ClearLine(row);
+                linesCleared++;
             }
             else {row++;}
+        }
+
+        if (linesCleared > 0 && EventManager.Instance != null)
+        {
+            EventManager.Instance.TriggerLinesCleared(linesCleared);
         }
     }
 

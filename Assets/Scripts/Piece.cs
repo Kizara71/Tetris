@@ -98,8 +98,10 @@ public class Piece : MonoBehaviour
     private void Lock()
     {
         board.SetPiece(this);
-        board.ClearLines();
-        board.SpawnPiece();    
+        if (EventManager.Instance != null)
+        {
+            EventManager.Instance.TriggerPieceLocked();
+        }
     }
 
     private void RotatePiece(int rotationDirection)
