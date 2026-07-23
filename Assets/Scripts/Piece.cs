@@ -10,10 +10,12 @@ public class Piece : MonoBehaviour
     public float stepDelay = 1f;
     public float lockDelay = 0.5f;
     public float softDropDelay = 0.1f;
+    public float moveDelay = 0.1f;
 
     private float stepTimer = 0f;
     private float lockTimer = 0f;
     private float softDropTimer = 0f;
+    private float moveTimer = 0f;
 
 
     public void InitializePiece(Board board, Vector3Int position, TetrominoData data)
@@ -27,6 +29,7 @@ public class Piece : MonoBehaviour
         this.stepTimer = Time.time + stepDelay;
         this.lockTimer = 0f;
         this.softDropTimer = Time.time + softDropDelay;
+        this.moveTimer = Time.time + moveDelay;
 
 
         if(cells == null)
@@ -40,41 +43,91 @@ public class Piece : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        if (GameInputManager.Instance != null)
+        {
+            GameInputManager.Instance.OnMoveLeft += HandleMoveLeft;
+            GameInputManager.Instance.OnMoveRight += HandleMoveRight;
+            GameInputManager.Instance.OnRotateLeft += HandleRotateLeft;
+            GameInputManager.Instance.OnRotateRight += HandleRotateRight;
+            GameInputManager.Instance.OnHardDrop += HandleHardDrop;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (GameInputManager.Instance != null)
+        {
+            GameInputManager.Instance.OnMoveLeft -= HandleMoveLeft;
+            GameInputManager.Instance.OnMoveRight -= HandleMoveRight;
+            GameInputManager.Instance.OnRotateLeft -= HandleRotateLeft;
+            GameInputManager.Instance.OnRotateRight -= HandleRotateRight;
+            GameInputManager.Instance.OnHardDrop -= HandleHardDrop;
+        }
+    }
+
+    private void HandleMoveLeft() 
+    {
+        board.RemovePiece(this);
+        Move(Vector2Int.left);
+        board.SetPiece(this);
+        moveTimer = Time.time + moveDelay; // Reset timer for continuous movement delay
+    }
+    
+    private void HandleMoveRight() 
+    {
+        board.RemovePiece(this);
+        Move(Vector2Int.right);
+        board.SetPiece(this);
+        moveTimer = Time.time + moveDelay; // Reset timer for continuous movement delay
+    }
+    
+    private void HandleRotateLeft() 
+    {
+        board.RemovePiece(this);
+        RotatePiece(-1);
+        board.SetPiece(this);
+    }
+    
+    private void HandleRotateRight() 
+    {
+        board.RemovePiece(this);
+        RotatePiece(1);
+        board.SetPiece(this);
+    }
+    
+    private void HandleHardDrop()
+    {
+        board.RemovePiece(this);
+        HardDrop();
+        // HardDrop calls Lock(), which sets the piece, so we don't need to call SetPiece here.
+    }
+
     public void Update()
     {
         board.RemovePiece(this);
 
         lockTimer += Time.deltaTime;
 
-        // if(Input.GetKeyDown(KeyCode.W))
-        // {
-        //     Move(Vector2Int.up);
-        // }
-        if(Input.GetKey(KeyCode.S) && Time.time >= softDropTimer)
+        if (GameInputManager.Instance != null)
         {
-            Move(Vector2Int.down);
-            softDropTimer = Time.time + softDropDelay;
-        }
-        if(Input.GetKeyDown(KeyCode.A))
-        {
-            Move(Vector2Int.left);
-        }
-        if(Input.GetKeyDown(KeyCode.D))
-        {
-            Move(Vector2Int.right);
-        }
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            HardDrop();
-        }
+            if (GameInputManager.Instance.IsSoftDropHeld() && Time.time >= softDropTimer)
+            {
+                Move(Vector2Int.down);
+                softDropTimer = Time.time + softDropDelay;
+            }
 
-        if(Input.GetKeyDown(KeyCode.Q))
-        {
-            RotatePiece(-1);
-        }
-        if(Input.GetKeyDown(KeyCode.E))
-        {
-            RotatePiece(1);
+            if (GameInputManager.Instance.IsMoveLeftHeld() && Time.time >= moveTimer)
+            {
+                Move(Vector2Int.left);
+                moveTimer = Time.time + moveDelay;
+            }
+            else if (GameInputManager.Instance.IsMoveRightHeld() && Time.time >= moveTimer)
+            {
+                Move(Vector2Int.right);
+                moveTimer = Time.time + moveDelay;
+            }
         }
 
         if(Time.time >= stepTimer)
@@ -83,7 +136,7 @@ public class Piece : MonoBehaviour
         }
 
         board.SetPiece(this);
-    }  
+    }
 
     private void Step()
     {
